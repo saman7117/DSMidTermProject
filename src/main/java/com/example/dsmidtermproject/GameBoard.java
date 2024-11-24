@@ -1,258 +1,154 @@
 package com.example.dsmidtermproject;
-
-import javafx.scene.control.Label;
-
+import java.util.ArrayList;
 import java.util.Random;
+import com.example.dsmidtermproject.Node;
 
 public class GameBoard {
-    Node[] rows;
-    Label[][] tileLabels;
-    Random random = new Random();
-    int score = 0;
+    private Node[] rows = new Node[4];
+    private Node[] cols = new Node[4];
+    private int[][] grid = new int[4][4];
+    private Random random = new Random();
+    public int score = 0;
 
-    public GameBoard(Label[][] tileLabels) {
-        this.tileLabels = tileLabels;
-        rows = new Node[4];
-
+    public GameBoard() {
         for (int i = 0; i < 4; i++) {
-            rows[i] = createRow();
+            rows[i] = new Node(-1, -1, -1);
+            cols[i] = new Node(-1, -1, -1);
         }
-    }
-
-    private Node createRow() {
-        Node head = new Node(0);
-        Node curr = head;
-        for (int i = 1; i < 4; i++) {
-            Node newNode = new Node(0);
-            curr.next = newNode;
-            newNode.prev = curr;
-            curr = newNode;
-        }
-        return head;
-    }
-
-    public boolean moveLeft() {
-        boolean moved = false;
-        for (int i = 0; i < 4; i++) {
-            moved |= shiftAndMerge(rows[i]);
-        }
-        return moved;
-    }
-
-    public boolean moveRight() {
-        boolean moved = false;
-        for (int i = 0; i < 4; i++) {
-            Node reversedRow = reverseRow(rows[i]);
-            moved |= shiftAndMerge(reversedRow);
-            reverseRow(reversedRow);
-        }
-        return moved;
-    }
-
-    public boolean moveUp() {
-        boolean moved = false;
-        for (int col = 0; col < 4; col++) {
-            Node column = getColumn(col);
-            moved |= shiftAndMerge(column);
-            updateColumn(col, column);
-        }
-        return moved;
-    }
-
-    public boolean moveDown() {
-        boolean moved = false;
-
-        for (int col = 0; col < 4; col++) {
-            // Create and reverse the column linked list
-            Node column = reverseColumn(getColumn(col));
-
-            // Perform shift and merge on the reversed column
-            moved |= shiftAndMerge(column);
-
-            // Reverse the column back and update the game board
-            column = reverseColumn(column);
-            updateColumn(col, column);
-        }
-
-        return moved;
-    }
-
-
-    private boolean shiftAndMerge(Node head) {
-        boolean moved = false;
-
-        Node curr = head;
-        while (curr != null) {
-            Node next = curr.next;
-
-            while (next != null && next.data == 0) {
-                next = next.next; // Skip over empty tiles
-            }
-
-            if (next != null && curr.data == 0) {
-                // Shift tile forward
-                curr.data = next.data;
-                next.data = 0;
-                moved = true;
-            }
-            curr = curr.next;
-        }
-
-        curr = head;
-        while (curr != null && curr.next != null) {
-            if (curr.data == curr.next.data && curr.data != 0) {
-                // Merge tiles
-                curr.data *= 2;
-                curr.next.data = 0;
-                moved = true;
-            }
-            curr = curr.next;
-        }
-
-        curr = head;
-
-
-        return moved;
+        addRandomTile();
+        addRandomTile();
     }
 
     public void addRandomTile() {
-        int emptyCount = countEmptyTiles();
-        if (emptyCount == 0) return;
-
-        int target = random.nextInt(emptyCount);
-        int count = 0;
-
+        ArrayList<int[]> emptyCells = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            Node curr = rows[i];
             for (int j = 0; j < 4; j++) {
-                if (curr.data == 0) {
-                    if (count == target) {
-                        curr.data = random.nextDouble() < 0.3 ? 4 : 2;
-                        return;
-                    }
-                    count++;
+                if (grid[i][j] == 0) emptyCells.add(new int[]{i, j});
+            }
+        }
+        if (emptyCells.isEmpty()) return;
+
+        int[] randomCell = emptyCells.get(random.nextInt(emptyCells.size()));
+        int value = random.nextDouble() < 0.9 ? 2 : 4;
+        addNode(value, randomCell[1], randomCell[0]);
+    }
+
+    public void addNode(int value, int x, int y) {
+        grid[y][x] = value;
+        Node newNode = new Node(value, x, y);
+
+        // Add to row
+        Node rowHead = rows[y];
+        while (rowHead.nextCol != null) rowHead = rowHead.nextCol;
+        rowHead.nextCol = newNode;
+
+        // Add to column
+        Node colHead = cols[x];
+        while (colHead.nextRow != null) colHead = colHead.nextRow;
+        colHead.nextRow = newNode;
+    }
+
+    public void moveLeft() {
+        for (int y = 0; y < 4; y++) {
+            int[] temp = new int[4];
+            int index = 0;
+            for (int x = 0; x < 4; x++) {
+                if (grid[y][x] != 0) {
+                    temp[index++] = grid[y][x];
                 }
-                curr = curr.next;
             }
-        }
-    }
-
-    public void updateUI() {
-        for (int i = 0; i < 4; i++) {
-            Node curr = rows[i];
-            for (int j = 0; j < 4; j++) {
-                Label label = tileLabels[i][j];
-                if (curr.data == 0) {
-                    label.setText("");
-                    label.setStyle("-fx-background-color: lightgray; -fx-border-color: black;");
-                } else {
-                    label.setText(String.valueOf(curr.data));
-                    label.setStyle("-fx-background-color: " + getColor(curr.data) + "; -fx-border-color: black;");
+            for (int i = 0; i < index - 1; i++) {
+                if (temp[i] == temp[i + 1]) {
+                    temp[i] *= 2;
+                    score += temp[i];
+                    temp[i + 1] = 0;
                 }
-                curr = curr.next;
+            }
+            index = 0;
+            for (int x = 0; x < 4; x++) {
+                grid[y][x] = 0;
+                if (temp[index] != 0) grid[y][x] = temp[index++];
             }
         }
+        addRandomTile();
     }
 
-    // Get the color for a specific tile value
-    private String getColor(int value) {
-        return switch (value) {
-            case 2 -> "#EEE4DA";
-            case 4 -> "#EDE0C8";
-            case 8 -> "#F2B179";
-            case 16 -> "#F59563";
-            case 32 -> "#F67C5F";
-            case 64 -> "#F65E3B";
-            case 128 -> "#EDCF72";
-            case 256 -> "#EDCC61";
-            case 512 -> "#EDC850";
-            case 1024 -> "#EDC53F";
-            case 2048 -> "#EDC22E";
-            default -> "#CDC1B4";
-        };
-    }
-
-    // Get the column as a linked list
-    private Node getColumn(int colIndex) {
-        Node head = null; // Initialize the head of the column linked list
-        Node curr = null;
-
-        for (int row = 0; row < 4; row++) {
-            Node rowNode = rows[row];
-            for (int i = 0; i < colIndex; i++) {
-                rowNode = rowNode.next; // Move to the correct column node
+    public void moveRight() {
+        for (int y = 0; y < 4; y++) {
+            int[] temp = new int[4];
+            int index = 3;
+            for (int x = 3; x >= 0; x--) {
+                if (grid[y][x] != 0) {
+                    temp[index--] = grid[y][x];
+                }
             }
-
-            Node newNode = new Node(rowNode.data); // Create a new node for the column
-            if (head == null) {
-                head = newNode; // Set the head of the column
-                curr = head;
-            } else {
-                curr.next = newNode; // Link the new node
-                newNode.prev = curr;
-                curr = newNode;
+            for (int i = 3; i > 0; i--) {
+                if (temp[i] == temp[i - 1]) {
+                    temp[i] *= 2;
+                    score += temp[i];
+                    temp[i - 1] = 0;
+                }
+            }
+            index = 3;
+            for (int x = 3; x >= 0; x--) {
+                grid[y][x] = 0;
+                if (temp[index] != 0) grid[y][x] = temp[index--];
             }
         }
-
-        return head;
+        addRandomTile();
     }
 
-
-    // Update the column with new data
-    private void updateColumn(int colIndex, Node column) {
-        Node curr = column;
-
-        for (int row = 0; row < 4; row++) {
-            Node rowNode = rows[row];
-            for (int i = 0; i < colIndex; i++) {
-                rowNode = rowNode.next; // Navigate to the correct node in the row
+    public void moveUp() {
+        for (int x = 0; x < 4; x++) {
+            int[] temp = new int[4];
+            int index = 0;
+            for (int y = 0; y < 4; y++) {
+                if (grid[y][x] != 0) {
+                    temp[index++] = grid[y][x];
+                }
             }
-
-            if (curr != null) {
-                rowNode.data = curr.data; // Update the row node with column data
-                curr = curr.next;
-            } else {
-                rowNode.data = 0; // Default to 0 if the column node is null
+            for (int i = 0; i < index - 1; i++) {
+                if (temp[i] == temp[i + 1]) {
+                    temp[i] *= 2;
+                    score += temp[i];
+                    temp[i + 1] = 0;
+                }
             }
-        }
-    }
-
-    private Node reverseColumn(Node head) {
-        Node curr = head, prev = null;
-
-        while (curr != null) {
-            Node next = curr.next;
-            curr.next = prev;
-            curr.prev = next;
-            prev = curr;
-            curr = next;
-        }
-
-        return prev;
-    }
-
-
-    private Node reverseRow(Node head) {
-        return reverseColumn(head);
-    }
-
-    private Node getNodeAt(int row, int col) {
-        Node curr = rows[row];
-        for (int i = 0; i < col; i++) {
-            curr = curr.next;
-        }
-        return curr;
-    }
-
-    private int countEmptyTiles() {
-        int count = 0;
-        for (int i = 0; i < 4; i++) {
-            Node curr = rows[i];
-            while (curr != null) {
-                if (curr.data == 0) count++;
-                curr = curr.next;
+            index = 0;
+            for (int y = 0; y < 4; y++) {
+                grid[y][x] = 0;
+                if (temp[index] != 0) grid[y][x] = temp[index++];
             }
         }
-        return count;
+        addRandomTile();
+    }
+
+    public void moveDown() {
+        for (int x = 0; x < 4; x++) {
+            int[] temp = new int[4];
+            int index = 3;
+            for (int y = 3; y >= 0; y--) {
+                if (grid[y][x] != 0) {
+                    temp[index--] = grid[y][x];
+                }
+            }
+            for (int i = 3; i > 0; i--) {
+                if (temp[i] == temp[i - 1]) {
+                    temp[i] *= 2;
+                    score += temp[i];
+                    temp[i - 1] = 0;
+                }
+            }
+            index = 3;
+            for (int y = 3; y >= 0; y--) {
+                grid[y][x] = 0;
+                if (temp[index] != 0) grid[y][x] = temp[index--];
+            }
+        }
+        addRandomTile();
+    }
+
+    public int[][] getGrid() {
+        return grid;
     }
 }
