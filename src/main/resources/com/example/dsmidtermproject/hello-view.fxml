@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.dsmidtermproject.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<?import javafx.scene.input.KeyEvent?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+<VBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" spacing="10"
+      fx:controller="com.example.dsmidtermproject.Game2048"
+      style="-fx-background-color: #8B8077;">
+
+    <!-- Score Display -->
+    <Text fx:id="scoreText" text="Score: 0" style="-fx-font-size: 18;" />
+
+    <!-- Game Grid -->
+    <GridPane fx:id="gameGrid" hgap="5" vgap="5" />
+
+    <!-- Buttons -->
+    <HBox spacing="10" alignment="center">
+        <Button text="Undo"  style="-fx-font-size: 14;" />
+        <Button text="Redo"  style="-fx-font-size: 14;" />
+    </HBox>
 </VBox>

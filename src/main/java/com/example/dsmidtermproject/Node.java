@@ -1,19 +1,17 @@
 package com.example.dsmidtermproject;
 
 public class Node {
-    int data, x, y;
-    Node nextRow, nextCol, prevRow, prevCol;
+    int value;
+    int x, y;
+    Node nextRow, nextCol;
 
-    public Node(int data, int x, int y) {
-        this.data = data;
+    Node(int value, int x, int y) {
+        this.value = value;
         this.x = x;
         this.y = y;
-        this.nextRow = null;
-        this.nextCol = null;
-        this.prevRow = null;
-        this.prevCol = null;
     }
 }
+
 
 
 
