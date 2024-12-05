@@ -5,13 +5,19 @@ import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class GameBoard {
     private final Node[] rowHeads;
@@ -24,6 +30,7 @@ public class GameBoard {
     private Stack<Integer> undoscoreStack = new Stack<>();
     private Stack<int[][]> redoStack = new Stack<>();
     private Stack<Integer> redoscoreStack = new Stack<>();
+
 
     public GameBoard() {
         rowHeads = new Node[size];
@@ -100,12 +107,20 @@ public class GameBoard {
             }
         }
 
-        if (emptyCells.isEmpty()) return;
+        if (!emptyCells.isEmpty()) {
+            int[] chosen = emptyCells.get(random.nextInt(emptyCells.size()));
 
-        int[] chosen = emptyCells.get(random.nextInt(emptyCells.size()));
-        int value = random.nextDouble() < 0.3 ? 4 : 2;
-        addNode(value, chosen[0], chosen[1]);
+            int value;
+            if (random.nextDouble() < 0.3) {
+                value = 4;
+            } else {
+                value = 2;
+            }
+
+            addNode(value, chosen[0], chosen[1]);
+        }
     }
+
 
     public Node getNode(int x, int y) {
         Node row = rowHeads[y];
@@ -171,7 +186,7 @@ public class GameBoard {
         if (hasBoardChanged(oldState , currentState)){
             addRandomTile();
             if (isGameOver()) {
-                System.out.println("Game Over!");
+                showGameOverScreen();
             }
         }
     }
@@ -189,7 +204,7 @@ public class GameBoard {
         if (hasBoardChanged(oldState , currentState)){
             addRandomTile();
             if (isGameOver()) {
-                System.out.println("Game Over!");
+                showGameOverScreen();
             }
         }
     }
@@ -207,7 +222,7 @@ public class GameBoard {
         if (hasBoardChanged(oldState , currentState)) {
             addRandomTile();
             if (isGameOver()) {
-                System.out.println("Game Over!");
+                showGameOverScreen();
             }
         }
     }
@@ -226,6 +241,9 @@ public class GameBoard {
         int[][] currentState = getBoardState();
         if (hasBoardChanged(oldState, currentState)) {
             addRandomTile();
+        }
+        if (isGameOver()) {
+            showGameOverScreen();
         }
     }
 
@@ -259,7 +277,7 @@ public class GameBoard {
 
     private void shiftRight(int y) {
         Node row = rowHeads[y];
-        List<Node> reverseList = new ArrayList<>();
+        ArrayList<Node> reverseList = new ArrayList<>();
 
         while (row != null) {
             reverseList.add(row);
@@ -280,7 +298,7 @@ public class GameBoard {
 
     private void mergeRight(int y) {
         Node row = rowHeads[y];
-        List<Node> reverseList = new ArrayList<>();
+        ArrayList<Node> reverseList = new ArrayList<>();
 
         while (row != null) {
             reverseList.add(row);
@@ -303,7 +321,7 @@ public class GameBoard {
 
     private void mergeUp(int x) {
         Node col = colHeads[x];
-        List<Node> nodeList = new ArrayList<>();
+        ArrayList<Node> nodeList = new ArrayList<>();
 
         while (col != null) {
             nodeList.add(col);
@@ -326,7 +344,7 @@ public class GameBoard {
 
     private void shiftUp(int x) {
         Node col = colHeads[x];
-        List<Node> nodeList = new ArrayList<>();
+        ArrayList<Node> nodeList = new ArrayList<>();
 
         while (col != null) {
             nodeList.add(col);
@@ -346,7 +364,7 @@ public class GameBoard {
 
     private void mergeDown(int x) {
         Node col = colHeads[x];
-        List<Node> reverseList = new ArrayList<>();
+        ArrayList<Node> reverseList = new ArrayList<>();
 
         while (col != null) {
             reverseList.add(col);
@@ -370,7 +388,7 @@ public class GameBoard {
 
     private void shiftDown(int x) {
         Node col = colHeads[x];
-        List<Node> reverseList = new ArrayList<>();
+        ArrayList<Node> reverseList = new ArrayList<>();
 
         while (col != null) {
             reverseList.add(col);
@@ -421,6 +439,34 @@ public class GameBoard {
         }
         return true;
     }
+    public void showGameOverScreen() {
+        Stage gameOverStage = new Stage();
+        gameOverStage.setTitle("Game Over");
+
+        Text gameOverText = new Text("Game Over!\nYour Final Score: " + score);
+        gameOverText.setFont(Font.font("Minecraftia" , FontWeight.BOLD , 42));
+        gameOverText.setStyle("-fx-font-size: 24; -fx-fill: #3a3632;");
+
+        Button restartButton = new Button("Restart Game");
+        restartButton.setTextFill(Color.rgb(139 , 128 , 119));
+        restartButton.setStyle("-fx-font-size: 16; -fx-background-color: #3a3632;");
+        restartButton.setOnAction(e -> restartGame());
+
+        StackPane layout = new StackPane();
+        layout.getChildren().addAll(gameOverText, restartButton);
+        StackPane.setAlignment(gameOverText, javafx.geometry.Pos.CENTER);
+        StackPane.setAlignment(restartButton, javafx.geometry.Pos.BOTTOM_CENTER);
+
+        layout.setStyle("-fx-background-color: #8B8077;");
+
+
+        Scene scene = new Scene(layout, 400, 300);
+        gameOverStage.setScene(scene);
+        gameOverStage.show();
+    }
+    private void restartGame() {
+        System.out.println("Game Restarted!");
+    }
 
     public void display(GridPane grid, Label scoreText) {
         grid.getChildren().clear();
@@ -438,7 +484,8 @@ public class GameBoard {
                 if (node != null) {
                     rect.setFill(Color.web(getColor(node.value)));
                     text.setText(String.valueOf(node.value));
-                    text.setFont(new Font("Arial", 28));
+                    text.setFont(Font.font("Minecraftia", FontWeight.MEDIUM , 28));
+
                 }
 
                 StackPane stackPane = new StackPane();
