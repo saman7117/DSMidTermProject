@@ -1,5 +1,6 @@
 package com.example.dsmidtermproject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +20,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+
 public class GameBoard {
     private final Node[] rowHeads;
     private final Node[] colHeads;
@@ -30,7 +35,6 @@ public class GameBoard {
     private Stack<Integer> undoscoreStack = new Stack<>();
     private Stack<int[][]> redoStack = new Stack<>();
     private Stack<Integer> redoscoreStack = new Stack<>();
-
 
     public GameBoard() {
         rowHeads = new Node[size];
@@ -441,6 +445,18 @@ public class GameBoard {
     }
     public void showGameOverScreen() {
         Stage gameOverStage = new Stage();
+        File file = new File("C:\\Users\\Sazgar\\IdeaProjects\\DSMidtermProject\\src\\main\\java\\com\\example\\dsmidtermproject\\game-over-retro-video-game-music-soundroll-melody-4-4-00-03.wav");
+        new Thread(() -> {
+            try {
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioInputStream);
+                clip.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         gameOverStage.setTitle("Game Over");
 
         Text gameOverText = new Text("Game Over!\nYour Final Score: " + score);

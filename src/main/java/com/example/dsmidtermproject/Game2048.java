@@ -14,11 +14,31 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import static jdk.xml.internal.SecuritySupport.getResourceAsStream;
 
 public class Game2048 extends Application {
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws LineUnavailableException, UnsupportedAudioFileException, IOException {
+        File file = new File("C:\\Users\\Sazgar\\IdeaProjects\\DSMidtermProject\\src\\main\\java\\com\\example\\dsmidtermproject\\Morning-Routine-Lofi-Study-Music(chosic.com).wav");
+
+        new Thread(() -> {
+            try {
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioInputStream);
+                clip.loop(Clip.LOOP_CONTINUOUSLY);
+                clip.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         GameBoard board = new GameBoard();
         GridPane grid = new GridPane();
 
@@ -34,20 +54,18 @@ public class Game2048 extends Application {
                         "-fx-border-radius: 5px;"
         );
 
-
         Label label = new Label("2048");
         label.setFont(Font.font("Roboto", FontWeight.BOLD, 36));
         label.setTextFill(Color.BLACK);
         label.setStyle("-fx-background-color: transparent;");
 
-
         Label scoreValue = new Label("0");
         scoreValue.setFont(Font.font(24));
         scoreValue.setTextFill(Color.WHITE);
-        scoreValue.setFont(new Font("Roboto" , 24));
+        scoreValue.setFont(new Font("Roboto", 24));
 
-        VBox scoreBox = new VBox(5,label , scoreLabel, scoreValue);
-        scoreBox.setBackground(Background.fill(Color.rgb(139 , 128 , 119)));
+        VBox scoreBox = new VBox(5, label, scoreLabel, scoreValue);
+        scoreBox.setBackground(Background.fill(Color.rgb(139, 128, 119)));
         scoreBox.setAlignment(Pos.CENTER);
         label.setTranslateX(-340);
         label.setTranslateY(50);
@@ -56,8 +74,7 @@ public class Game2048 extends Application {
 
         VBox vbox = new VBox(10, scoreBox, grid);
         vbox.setStyle("-fx-background-color: #8B8077;");
-        VBox.setMargin(grid, new javafx.geometry.Insets(25, 0, 0, 30));
-
+        VBox.setMargin(grid, new Insets(25, 0, 0, 30));
 
         board.addRandomTile();
         board.addRandomTile();
@@ -81,8 +98,6 @@ public class Game2048 extends Application {
             board.display(grid, scoreValue);
         });
 
-//        Image img = new Image("src/main/java/com/example/dsmidtermproject/img.png");
-//        primaryStage.getIcons().add(img);
         primaryStage.setScene(scene);
         primaryStage.setTitle("2048 Game");
         primaryStage.setResizable(true);
